@@ -4,8 +4,6 @@ package com.recruitment.forexbuddy.model;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.*;
 
-import java.math.BigDecimal;
-
 @Data
 @Builder
 @NoArgsConstructor
@@ -15,6 +13,6 @@ import java.math.BigDecimal;
 public class DetailedRate {
     String currency;
     String code;
-    BigDecimal bid;
-    BigDecimal ask;
+    double bid;
+    double ask;
 }
