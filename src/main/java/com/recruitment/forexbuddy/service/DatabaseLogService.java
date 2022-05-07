@@ -1,18 +1,20 @@
 package com.recruitment.forexbuddy.service;
 
-import com.recruitment.forexbuddy.model.RequestType;
+import com.recruitment.forexbuddy.model.enums.RequestType;
 import com.recruitment.forexbuddy.model.entity.HistoryLogEntity;
 import com.recruitment.forexbuddy.repository.LogRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 
 @Service
-public class LoggingService {
+public class DatabaseLogService {
 
     private final LogRepository logRepository;
 
-    public LoggingService(LogRepository logRepository) {
+    @Autowired
+    public DatabaseLogService(LogRepository logRepository) {
         this.logRepository = logRepository;
     }
 

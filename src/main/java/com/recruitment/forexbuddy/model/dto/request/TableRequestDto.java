@@ -1,4 +1,4 @@
-package com.recruitment.forexbuddy.model;
+package com.recruitment.forexbuddy.model.dto.request;
 
 
 import lombok.Data;
@@ -8,10 +8,10 @@ import java.util.List;
 
 @Data
 @ToString
-public class ResponseC {
+public class TableRequestDto {
     String table;
     String no;
     String tradingDate;
     String effectiveDate;
-    List<DetailedRate> rates;
+    List<CurrencyDetailsRequestDto> rates;
 }

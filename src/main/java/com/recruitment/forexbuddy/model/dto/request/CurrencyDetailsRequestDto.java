@@ -1,4 +1,4 @@
-package com.recruitment.forexbuddy.model;
+package com.recruitment.forexbuddy.model.dto.request;
 
 
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -10,7 +10,7 @@ import lombok.*;
 @AllArgsConstructor
 @ToString
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class DetailedRate {
+public class CurrencyDetailsRequestDto {
     String currency;
     String code;
     double bid;

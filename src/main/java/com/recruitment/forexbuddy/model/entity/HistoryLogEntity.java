@@ -1,6 +1,6 @@
 package com.recruitment.forexbuddy.model.entity;
 
-import com.recruitment.forexbuddy.model.RequestType;
+import com.recruitment.forexbuddy.model.enums.RequestType;
 import lombok.*;
 
 import javax.persistence.*;
