@@ -3,7 +3,7 @@ package com.recruitment.forexbuddy.handlers.dtos;
 import lombok.Builder;
 
 @Builder
-public class ErrorMessage {
+public class ErrorMessageResponse {
     private String errorDescription;
 
     public String getErrorDescription() {

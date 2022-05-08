@@ -26,13 +26,14 @@ public class DatabaseLogService {
         return logRepository.saveAndFlush(entity);
     }
 
-    public HistoryLogEntity logRequestToDatabase(RequestType requestType, String from, String to, double amount) {
+    public HistoryLogEntity logRequestToDatabase(RequestType requestType, String from, String to, double amount, double ask) {
         HistoryLogEntity entity = HistoryLogEntity.builder()
                 .requestType(requestType)
                 .amount(amount)
                 .currencyFrom(from)
                 .currencyTo(to)
                 .date(LocalDateTime.now())
+                .rate(ask)
                 .build();
         return logRepository.saveAndFlush(entity);
     }

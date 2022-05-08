@@ -1,5 +1,7 @@
 package com.recruitment.forexbuddy.service;
 
+import com.recruitment.forexbuddy.exception.InvalidAmountException;
+import com.recruitment.forexbuddy.exception.InvalidCurrencyException;
 import com.recruitment.forexbuddy.model.dto.request.CurrencyDetailsRequestDto;
 import com.recruitment.forexbuddy.model.enums.RequestType;
 import com.recruitment.forexbuddy.model.dto.request.TableRequestDto;
@@ -16,6 +18,7 @@ import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
 @Service
@@ -36,32 +39,34 @@ public class NBPApiService {
                 .build();
     }
 
-    /**
-     * Póki co przelicza ze złotówek, żeby przeliczało z innym należy pobrać tabelę A/B i przeliczyć stosunek średnich
-     * cen lub z tabeli C
-     * @param from
-     * @param to
-     * @param amount
-     * @return
-     */
-    public CurrencyExchangeResponseDto getCurrentExchangeRate(String from, String to, double amount) {
-        databaseLogService.logRequestToDatabase(RequestType.EXCHANGE, from, to, amount);
+    public CurrencyExchangeResponseDto getCurrentExchangeRate(String from, String to, String amount) throws InvalidAmountException {
+        if (!"PLN".equals(from)) {
+            throw new InvalidAmountException("Only exchange from PLN is possible");
+        }
         TableRequestDto tableRequestDto = nbpApiClient.getAllDetailedRates();
-        CurrencyDetailsRequestDto currencyTo = tableRequestDto.getRates().stream()
-                .filter(rate -> to.equals(rate.getCode()))
-                .reduce((a, b) -> {
-                    throw new IllegalStateException("No currency found matching the code");
-                })
-                .get();
-        return CurrencyExchangeResponseDto.builder()
-                .currentDate(LocalDate.now())
-                .currentTime(LocalTime.now().truncatedTo(ChronoUnit.SECONDS))
-                .currencyFrom(from)
-                .amount(amount)
-                .ask(currencyTo.getAsk())
-                .bid(currencyTo.getBid())
-                .currencyTo(to)
-                .build();
+        CurrencyDetailsRequestDto currencyTo;
+        try {
+            currencyTo = tableRequestDto.getRates().stream()
+                    .filter(rate -> to.equals(rate.getCode()))
+                    .findAny()
+                    .get();
+        } catch (NoSuchElementException noSuchElementException) {
+            throw new InvalidCurrencyException("Please enter valid currency code");
+        }
+        try {
+            databaseLogService.logRequestToDatabase(RequestType.EXCHANGE, from, to, Double.parseDouble(amount), currencyTo.getAsk());
+            return CurrencyExchangeResponseDto.builder()
+                    .currentDate(LocalDate.now())
+                    .currentTime(LocalTime.now().truncatedTo(ChronoUnit.SECONDS))
+                    .currencyFrom(from)
+                    .amount(Double.parseDouble(amount))
+                    .ask(currencyTo.getAsk())
+                    .bid(currencyTo.getBid())
+                    .currencyTo(to)
+                    .build();
+        } catch (NumberFormatException numberFormatException) {
+            throw new InvalidAmountException("Please use coma as amount separator");
+        }
     }
 
     public List<CurrencyResponseDto> getCurrenciesAvailableToExchange() {

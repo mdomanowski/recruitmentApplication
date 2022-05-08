@@ -5,6 +5,8 @@ import com.recruitment.forexbuddy.model.dto.request.TableRequestDto;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.Objects;
+
 public class NBPApiClient {
 
     public static final String TABLE_C_API_URL = "http://api.nbp.pl/api/exchangerates/tables/c/";
@@ -18,8 +20,7 @@ public class NBPApiClient {
         try {
             var entity = restTemplate.getForEntity(TABLE_C_API_URL, response.getClass());
             var body = entity.getBody();
-            assert body != null;
-            return body[valueInsideJsonArray];
+            return Objects.requireNonNull(body)[valueInsideJsonArray];
         } catch (RestClientException e) {
             throw new InvalidApiConnection("Error while connecting to API");
         }

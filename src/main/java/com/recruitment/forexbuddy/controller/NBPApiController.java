@@ -1,5 +1,6 @@
 package com.recruitment.forexbuddy.controller;
 
+import com.recruitment.forexbuddy.exception.InvalidAmountException;
 import com.recruitment.forexbuddy.model.dto.response.CurrencyExchangeResponseDto;
 import com.recruitment.forexbuddy.service.NBPApiService;
 import lombok.RequiredArgsConstructor;
@@ -24,7 +25,7 @@ public class NBPApiController {
     @GetMapping("/{from}/{to}/{amount}")
     public ResponseEntity<?> getExchangeRateForCurrencyPair(@PathVariable("from") String from,
                                              @PathVariable("to") String to,
-                                             @PathVariable("amount") double amount) {
+                                             @PathVariable("amount") String amount) throws InvalidAmountException {
         CurrencyExchangeResponseDto dto = NBPApiService.getCurrentExchangeRate(from, to, amount);
         return ResponseEntity.ok(dto);
     }
