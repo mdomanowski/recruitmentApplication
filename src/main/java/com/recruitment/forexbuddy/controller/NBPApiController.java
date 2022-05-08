@@ -33,4 +33,9 @@ public class NBPApiController {
     public ResponseEntity<?> getAvailableCurrenciesToExchange() {
         return ResponseEntity.ok(NBPApiService.getCurrenciesAvailableToExchange());
     }
+
+    @GetMapping("/logs")
+    public ResponseEntity<?> getLogHistory() {
+        return ResponseEntity.ok(NBPApiService.getLogHistory());
+    }
 }

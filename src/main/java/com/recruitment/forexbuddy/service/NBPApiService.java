@@ -3,6 +3,7 @@ package com.recruitment.forexbuddy.service;
 import com.recruitment.forexbuddy.exception.InvalidAmountException;
 import com.recruitment.forexbuddy.exception.InvalidCurrencyException;
 import com.recruitment.forexbuddy.model.dto.request.CurrencyDetailsRequestDto;
+import com.recruitment.forexbuddy.model.dto.response.HistoryLogResponseDto;
 import com.recruitment.forexbuddy.model.enums.RequestType;
 import com.recruitment.forexbuddy.model.dto.request.TableRequestDto;
 import com.recruitment.forexbuddy.model.dto.response.CurrencyResponseDto;
@@ -31,7 +32,7 @@ public class NBPApiService {
     private final List<CurrencyResponseDto> currenciesAvailableToExchange = new ArrayList<>();
 
     public DetailedRatesResponseDto getDetailedRates() {
-        databaseLogService.logRequestToDatabase(RequestType.RATES_LIST);
+        databaseLogService.logRequestToDatabase(RequestType.EXCHANGE_RATES_LIST);
         TableRequestDto tableRequestDto = nbpApiClient.getAllDetailedRates();
         return DetailedRatesResponseDto.builder()
                 .actualDate(tableRequestDto.getEffectiveDate())
@@ -79,5 +80,9 @@ public class NBPApiService {
                                 .build())
                         .collect(Collectors.toList())
                 : currenciesAvailableToExchange;
+    }
+
+    public List<HistoryLogResponseDto> getLogHistory() {
+        return databaseLogService.getAllLogs();
     }
 }

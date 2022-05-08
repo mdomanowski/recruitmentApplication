@@ -4,6 +4,7 @@ import lombok.Builder;
 
 @Builder
 public class ErrorMessageResponse {
+
     private String errorDescription;
 
     public String getErrorDescription() {

@@ -2,6 +2,6 @@ package com.recruitment.forexbuddy.model.enums;
 
 public enum RequestType {
     EXCHANGE,
-    RATES_LIST,
+    EXCHANGE_RATES_LIST,
     CURRENCIES_LIST
 }
