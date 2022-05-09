@@ -1,105 +1,79 @@
 package com.recruitment.forexbuddy.service;
 
-import com.recruitment.forexbuddy.model.dto.response.HistoryLogResponseDto;
-import com.recruitment.forexbuddy.model.entity.HistoryLogEntity;
-import com.recruitment.forexbuddy.model.enums.RequestType;
-import com.recruitment.forexbuddy.repository.LogRepository;
-import org.junit.jupiter.api.BeforeEach;
+import com.recruitment.forexbuddy.exception.InvalidAmountException;
+import com.recruitment.forexbuddy.exception.InvalidCurrencyException;
+import com.recruitment.forexbuddy.model.dto.response.CurrencyExchangeResponseDto;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.beans.factory.annotation.Autowired;
-
-import java.time.LocalDateTime;
-import java.util.Collections;
-import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.catchThrowable;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-/**
- * public enum RequestType {
- *     EXCHANGE,
- *     EXCHANGE_RATES_LIST,
- *     CURRENCIES_LIST
- * }
- */
+class NBPApiServiceTest {
 
-@ExtendWith(MockitoExtension.class)
-class DatabaseLogServiceTest {
+    private final DatabaseLogService databaseLogService = mock(DatabaseLogService.class);
+    private final NBPApiService nbpApiService = new NBPApiService(databaseLogService);
 
-    private LogRepository logRepository;
-    private DatabaseLogService databaseLogService;
-    private NBPApiService nbpApiService;
-
-
-    @BeforeEach
-    public void init() {
-        logRepository = mock(LogRepository.class);
-        databaseLogService = new DatabaseLogService(logRepository);
-        nbpApiService = new NBPApiService(databaseLogService);
+    @Test
+    void get_Current_Exchange_Rate_From_Currency_Other_Than_PLN_throwsInvalidCurrencyException() {
+        // given
+        String invalidCurrencyFrom = "EUR";
+        String secondCurrencyTo = "USD";
+        String amountToExchange = "200";
+        // when
+        var invalidCurrencyException = catchThrowable(() ->
+                nbpApiService.getCurrentExchangeRate(invalidCurrencyFrom, secondCurrencyTo, amountToExchange));
+        // then
+        assertThat(invalidCurrencyException)
+                .isInstanceOf(InvalidCurrencyException.class)
+                .hasMessageContaining("Only exchange from PLN is possible");
     }
 
     @Test
-    void Should_Return_List_With_One_Log_Of_Type_EXCHANGE_When_getCurrentExchangeRate_Was_Called() {
+    void get_Current_Exchange_Rate_From_PLN_For_Currency_With_Invalid_Code_throwsInvalidCurrencyException() {
         // given
-        RequestType requestType = RequestType.EXCHANGE;
-        double amount = 17;
         String currencyFrom = "PLN";
-        String currencyTo = "GBP";
-        double rate = 5.5139;
-        LocalDateTime date = LocalDateTime.now();
-
-        HistoryLogEntity historyLogEntity = HistoryLogEntity.builder()
-                .requestType(requestType)
-                .amount(amount)
-                .currencyFrom(currencyFrom)
-                .currencyTo(currencyTo)
-                .date(date)
-                .rate(rate)
-                .build();
-        HistoryLogResponseDto historyLogResponseDto = HistoryLogResponseDto.builder()
-                .requestType(requestType)
-                .amount(amount)
-                .currencyFrom(currencyFrom)
-                .currencyTo(currencyTo)
-                .date(date)
-                .rate(rate)
-                .build();
-        databaseLogService.logRequestToDatabase(requestType, currencyFrom, currencyTo, amount, rate);
-        List<HistoryLogEntity> historyLogEntityList = Collections.singletonList(historyLogEntity);
-
+        String currencyTo = "US";
+        String amountToExchange = "200";
         // when
-        when(logRepository.findAll()).thenReturn(historyLogEntityList);
-        List<HistoryLogResponseDto> resultLogs = databaseLogService.getAllLogs();
-
+        var invalidCurrencyException = catchThrowable(() ->
+                nbpApiService.getCurrentExchangeRate(currencyFrom, currencyTo, amountToExchange));
         // then
-        assertThat(resultLogs).hasSize(1).contains(historyLogResponseDto);
+        assertThat(invalidCurrencyException)
+                .isInstanceOf(InvalidCurrencyException.class)
+                .hasMessageContaining("Please enter valid currency code");
     }
 
     @Test
-    void Should_Return_List_With_One_Log_Of_Type_CURRENCIES_LIST_When_getCurrentExchangeRate_Was_Called() {
+    void get_Current_Exchange_Rate_With_Invalid_Amount_throwsInvalidAmountException() {
         // given
-        RequestType requestType = RequestType.CURRENCIES_LIST;
-
-        LocalDateTime date = LocalDateTime.now();
-
-        HistoryLogEntity historyLogEntity = HistoryLogEntity.builder()
-                .requestType(requestType)
-                .build();
-        HistoryLogResponseDto historyLogResponseDto = HistoryLogResponseDto.builder()
-                .requestType(requestType)
-                .build();
-        databaseLogService.logRequestToDatabase(requestType);
-        List<HistoryLogEntity> historyLogEntityList = Collections.singletonList(historyLogEntity);
-
+        String currencyFrom = "PLN";
+        String currencyTo = "USD";
+        String amountToExchange = "200,12";
         // when
-        when(logRepository.findAll()).thenReturn(historyLogEntityList);
-        List<HistoryLogResponseDto> resultLogs = databaseLogService.getAllLogs();
-
+        var invalidAmountException = catchThrowable(() ->
+                nbpApiService.getCurrentExchangeRate(currencyFrom, currencyTo, amountToExchange));
         // then
-        assertThat(resultLogs).hasSize(1).contains(historyLogResponseDto);
+        assertThat(invalidAmountException)
+                .isInstanceOf(InvalidAmountException.class)
+                .hasMessageContaining("Please enter a valid amount, separated by coma");
+    }
+
+    @Test
+    void get_Current_Exchange_Rate_With_Valid_Arguments_Produces_Valid_CurrencyExchangeResponseDto() throws InvalidCurrencyException {
+        // given
+        String currencyFrom = "PLN";
+        String currencyTo = "USD";
+        String amount = "200.12";
+        // when
+        when(databaseLogService.logRequestToDatabase(any())).thenReturn(null);
+        CurrencyExchangeResponseDto detailedRatesResponseDto = nbpApiService.getCurrentExchangeRate(
+                currencyFrom, currencyTo, amount);
+        // then
+        assertThat(detailedRatesResponseDto.getCurrencyFrom()).isEqualTo(currencyFrom);
+        assertThat(detailedRatesResponseDto.getCurrencyTo()).isEqualTo(currencyTo);
+        assertThat(String.valueOf(detailedRatesResponseDto.getAmount())).isEqualTo(amount);
     }
 }

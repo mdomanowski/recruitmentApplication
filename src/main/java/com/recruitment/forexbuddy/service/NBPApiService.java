@@ -1,7 +1,7 @@
 package com.recruitment.forexbuddy.service;
 
-import com.recruitment.forexbuddy.exception.InvalidAmountException;
 import com.recruitment.forexbuddy.exception.InvalidCurrencyException;
+import com.recruitment.forexbuddy.exception.InvalidAmountException;
 import com.recruitment.forexbuddy.model.dto.request.CurrencyDetailsRequestDto;
 import com.recruitment.forexbuddy.model.dto.response.HistoryLogResponseDto;
 import com.recruitment.forexbuddy.model.enums.RequestType;
@@ -40,9 +40,9 @@ public class NBPApiService {
                 .build();
     }
 
-    public CurrencyExchangeResponseDto getCurrentExchangeRate(String from, String to, String amount) throws InvalidAmountException {
+    public CurrencyExchangeResponseDto getCurrentExchangeRate(String from, String to, String amount) throws InvalidCurrencyException {
         if (!"PLN".equals(from)) {
-            throw new InvalidAmountException("Only exchange from PLN is possible");
+            throw new InvalidCurrencyException("Only exchange from PLN is possible");
         }
         TableRequestDto tableRequestDto = nbpApiClient.getAllDetailedRates();
         CurrencyDetailsRequestDto currencyTo;
@@ -66,7 +66,7 @@ public class NBPApiService {
                     .currencyTo(to)
                     .build();
         } catch (NumberFormatException numberFormatException) {
-            throw new InvalidAmountException("Please use coma as amount separator");
+            throw new InvalidAmountException("Please enter a valid amount, separated by coma");
         }
     }
 

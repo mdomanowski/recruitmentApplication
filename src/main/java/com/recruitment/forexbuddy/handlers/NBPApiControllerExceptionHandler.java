@@ -1,8 +1,8 @@
 package com.recruitment.forexbuddy.handlers;
 
-import com.recruitment.forexbuddy.exception.InvalidAmountException;
-import com.recruitment.forexbuddy.exception.InvalidApiConnection;
 import com.recruitment.forexbuddy.exception.InvalidCurrencyException;
+import com.recruitment.forexbuddy.exception.InvalidApiConnection;
+import com.recruitment.forexbuddy.exception.InvalidAmountException;
 import com.recruitment.forexbuddy.handlers.dtos.ErrorMessageResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -22,16 +22,16 @@ public class NBPApiControllerExceptionHandler {
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.PAYMENT_REQUIRED)
-    public ErrorMessageResponse invalidCurrencyException(InvalidCurrencyException invalidCurrencyException) {
+    public ErrorMessageResponse invalidCurrencyException(InvalidAmountException invalidAmountException) {
         return ErrorMessageResponse.builder()
-                .errorDescription(invalidCurrencyException.getMessage())
+                .errorDescription(invalidAmountException.getMessage())
                 .build();
     }
     @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorMessageResponse invalidAmountException(InvalidAmountException invalidAmountException) {
+    public ErrorMessageResponse invalidAmountException(InvalidCurrencyException invalidCurrencyException) {
         return ErrorMessageResponse.builder()
-                .errorDescription(invalidAmountException.getMessage())
+                .errorDescription(invalidCurrencyException.getMessage())
                 .build();
     }
 }
