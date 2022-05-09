@@ -4,6 +4,7 @@ import com.recruitment.forexbuddy.exception.InvalidCurrencyException;
 import com.recruitment.forexbuddy.exception.InvalidAmountException;
 import com.recruitment.forexbuddy.model.dto.request.CurrencyDetailsRequestDto;
 import com.recruitment.forexbuddy.model.dto.response.HistoryLogResponseDto;
+import com.recruitment.forexbuddy.model.entity.HistoryLogEntity;
 import com.recruitment.forexbuddy.model.enums.RequestType;
 import com.recruitment.forexbuddy.model.dto.request.TableRequestDto;
 import com.recruitment.forexbuddy.model.dto.response.CurrencyResponseDto;
@@ -33,6 +34,7 @@ public class NBPApiService {
 
     public DetailedRatesResponseDto getDetailedRates() {
         databaseLogService.logRequestToDatabase(RequestType.EXCHANGE_RATES_LIST);
+        log.info("Getting a list of currencies and the detailed rates");
         TableRequestDto tableRequestDto = nbpApiClient.getAllDetailedRates();
         return DetailedRatesResponseDto.builder()
                 .actualDate(tableRequestDto.getEffectiveDate())
@@ -55,7 +57,8 @@ public class NBPApiService {
             throw new InvalidCurrencyException("Please enter valid currency code");
         }
         try {
-            databaseLogService.logRequestToDatabase(RequestType.EXCHANGE, from, to, Double.parseDouble(amount), currencyTo.getAsk());
+            HistoryLogEntity historyLogEntity = databaseLogService.logRequestToDatabase(RequestType.EXCHANGE, from, to, Double.parseDouble(amount), currencyTo.getAsk());
+            log.info("entity = " + historyLogEntity);
             return CurrencyExchangeResponseDto.builder()
                     .currentDate(LocalDate.now())
                     .currentTime(LocalTime.now().truncatedTo(ChronoUnit.SECONDS))
@@ -71,7 +74,8 @@ public class NBPApiService {
     }
 
     public List<CurrencyResponseDto> getCurrenciesAvailableToExchange() {
-        databaseLogService.logRequestToDatabase(RequestType.CURRENCIES_LIST);
+        HistoryLogEntity historyLogEntity = databaseLogService.logRequestToDatabase(RequestType.CURRENCIES_LIST);
+        log.info("Getting list of currencies available for exchange");
         return currenciesAvailableToExchange.isEmpty()
                 ? nbpApiClient.getAllDetailedRates().getRates().stream()
                         .map(currencyDetailsRequestDto -> CurrencyResponseDto.builder()
@@ -83,6 +87,7 @@ public class NBPApiService {
     }
 
     public List<HistoryLogResponseDto> getLogHistory() {
+        log.info("Getting logs");
         return databaseLogService.getAllLogs();
     }
 }
