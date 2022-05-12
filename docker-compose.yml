@@ -1,0 +1,41 @@
+version: '3.8'
+services:
+  db:
+    container_name: pg_container
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: rates
+    ports:
+      - "5050:80"
+    healthcheck:
+      test: ["CMD-SHELL","pg_isready -U postgres -d rates"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    volumes:
+      - postgres:/var/lib/postgresql/data
+  api_backend:
+    container_name: exchange_rates_backend
+    image: exchange_rates_backend
+    build:
+      context: .
+    ports:
+      - "8082:8082"
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      # APPLICATION PROPERTIES
+      - SERVER_PORT=8082
+      # DATABASE
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=postgres
+      # POSTGRESQL
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/rates
+      # JPA
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=create-drop
+volumes:
+  postgres:
